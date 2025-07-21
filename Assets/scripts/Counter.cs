@@ -1,14 +1,16 @@
+using System;
 using UnityEngine;
 using System.Collections;
 
 public class Counter : MonoBehaviour
 {
     [SerializeField, Min(0)] private float _countDelay = 0.5f;
-    [SerializeField] private CounterView _counterView;
+    [SerializeField] private InputReader _inputReader;
     
     private Coroutine _countingTask;
+    private int _currentCount;
     
-    public int _currentCount { get; private set; } 
+    public event Action<int> CountChanged;
     
     private void Start()
     {
@@ -16,29 +18,25 @@ public class Counter : MonoBehaviour
         _countingTask = null;
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        HandleTimerInput();
+        _inputReader.LeftMouseClicked += HandleTimer;
     }
     
-    private void OnDestroy()
+    private void OnDisable()
     {
-        if ((_countingTask == null) == false)
-            StopCoroutine(_countingTask);
+        _inputReader.LeftMouseClicked -= HandleTimer;
     }
-
-    public void HandleTimerInput()
+    
+    public void HandleTimer()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (_countingTask == null)
         {
-            if (_countingTask == null)
-            {
-                StartCounting();
-            }
-            else
-            {
-                PauseCounting();
-            }
+            StartCounting();
+        }
+        else
+        {
+            PauseCounting();
         }
     }
 
@@ -49,7 +47,7 @@ public class Counter : MonoBehaviour
 
     private void PauseCounting()
     {
-        if ((_countingTask == null) == false)
+        if (_countingTask != null)
         {
             StopCoroutine(_countingTask);
             
@@ -65,7 +63,7 @@ public class Counter : MonoBehaviour
         {
             _currentCount++;
             
-            _counterView.Show(_currentCount);
+            CountChanged?.Invoke(_currentCount);
             
             yield return wait;
         }
