@@ -1,14 +1,14 @@
 using UnityEngine;
 using System.Collections;
-using TMPro;
 
-public class CounterController : MonoBehaviour
+public class Counter : MonoBehaviour
 {
     [SerializeField, Min(0)] private float _countDelay = 0.5f;
-    [SerializeField] private TextMeshProUGUI _text;
+    [SerializeField] private CounterView _counterView;
     
-    private int _currentCount; 
     private Coroutine _countingTask;
+    
+    public int _currentCount { get; private set; } 
     
     private void Start()
     {
@@ -27,7 +27,7 @@ public class CounterController : MonoBehaviour
             StopCoroutine(_countingTask);
     }
 
-    private void HandleTimerInput()
+    public void HandleTimerInput()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -44,15 +44,11 @@ public class CounterController : MonoBehaviour
 
     private void StartCounting()
     {
-        Debug.Log("Старт");
-
         _countingTask = StartCoroutine(IncrementCounter());
     }
 
     private void PauseCounting()
     {
-        Debug.Log("Пауза");
-        
         if ((_countingTask == null) == false)
         {
             StopCoroutine(_countingTask);
@@ -63,15 +59,15 @@ public class CounterController : MonoBehaviour
     
     private IEnumerator IncrementCounter()
     {
+        WaitForSeconds wait = new WaitForSeconds(_countDelay);
+
         while (enabled)
         {
             _currentCount++;
-
-            _text.text = _currentCount.ToString();
             
-            Debug.Log(_currentCount);
+            _counterView.Show(_currentCount);
             
-            yield return new WaitForSeconds(_countDelay);
+            yield return wait;
         }
     }
 }
